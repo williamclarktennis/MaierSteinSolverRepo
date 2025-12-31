@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>docs1 – Maier Stein Solver Documentation</title>
+<title>Developer Notes – Maier Stein Solver Documentation</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -69,35 +69,6 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
-  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
-
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
 
 <link rel="stylesheet" href="styles.css">
 </head>
@@ -120,7 +91,7 @@ window.Quarto = {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link active" href="./index.html" aria-current="page"> 
+    <a class="nav-link" href="./index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
@@ -132,7 +103,7 @@ window.Quarto = {
 <span class="menu-text">Getting started</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./notes-by-date.html"> 
+    <a class="nav-link active" href="./notes-by-date.html" aria-current="page"> 
 <span class="menu-text">Developer Notes</span></a>
   </li>  
 </ul>
@@ -151,16 +122,7 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#maier-stein-solver-documentation" id="toc-maier-stein-solver-documentation" class="nav-link active" data-scroll-target="#maier-stein-solver-documentation">Maier Stein Solver documentation!</a>
-  <ul class="collapse">
-  <li><a href="#description" id="toc-description" class="nav-link" data-scroll-target="#description">Description</a></li>
-  <li><a href="#commands" id="toc-commands" class="nav-link" data-scroll-target="#commands">Commands</a>
-  <ul class="collapse">
-  <li><a href="#syncing-data-to-cloud-storage" id="toc-syncing-data-to-cloud-storage" class="nav-link" data-scroll-target="#syncing-data-to-cloud-storage">Syncing data to cloud storage</a></li>
-  </ul></li>
-  <li><a href="#philisophical-points" id="toc-philisophical-points" class="nav-link" data-scroll-target="#philisophical-points">Philisophical Points</a></li>
-  <li><a href="#mathematical-discussion" id="toc-mathematical-discussion" class="nav-link" data-scroll-target="#mathematical-discussion">Mathematical Discussion</a></li>
-  </ul></li>
+  <li><a href="#december-31-2025" id="toc-december-31-2025" class="nav-link active" data-scroll-target="#december-31-2025">December 31, 2025</a></li>
   </ul>
 </nav>
     </div>
@@ -169,7 +131,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">docs1</h1>
+<h1 class="title">Developer Notes</h1>
 </div>
 
 
@@ -186,38 +148,11 @@ window.Quarto = {
 </header>
 
 
-<p>This is a Quarto website.</p>
-<p>To learn more about Quarto websites visit <a href="https://quarto.org/docs/websites" class="uri">https://quarto.org/docs/websites</a>.</p>
-<section id="maier-stein-solver-documentation" class="level1">
-<h1>Maier Stein Solver documentation!</h1>
-<section id="description" class="level2">
-<h2 class="anchored" data-anchor-id="description">Description</h2>
-<p>Solve for committor function using neural networks.</p>
-</section>
-<section id="commands" class="level2">
-<h2 class="anchored" data-anchor-id="commands">Commands</h2>
-<p>The Makefile contains the central entry points for common tasks related to this project.</p>
-<section id="syncing-data-to-cloud-storage" class="level3">
-<h3 class="anchored" data-anchor-id="syncing-data-to-cloud-storage">Syncing data to cloud storage</h3>
-<ul>
-<li><code>make sync_data_up</code> will use <code>aws s3 sync</code> to recursively sync files in <code>data/</code> up to <code>s3://maier-stein-bucket/data/</code>.</li>
-<li><code>make sync_data_down</code> will use <code>aws s3 sync</code> to recursively sync files from <code>s3://maier-stein-bucket/data/</code> to <code>data/</code>.</li>
-</ul>
-</section>
-</section>
-<section id="philisophical-points" class="level2">
-<h2 class="anchored" data-anchor-id="philisophical-points">Philisophical Points</h2>
-<p>In a typical machine learning pipeline, datasets, either labeled or unlabeled, are generated in one file, then passed to another file where the training happens. The separation of dataset code and training code is reflected in the cookie-cutter project organization: <code>dataset.py</code> and <code>modeling/train.py</code> are two separate files.</p>
-<p>For the Maier Stein solver, there are two types of datasets at play. The first kind are unlabeled datasets consisting of points in the transition region. These are unlabeled because we do not know the value of the committor function at such points. The second kind of dataset are labeled datasets consisting of points <span class="math inline">\(x \in \partial A\)</span> labeled by zero and points <span class="math inline">\(x \in \partial B\)</span> labeled by one. The logic for this labeling comes from the meaning of the committor function.</p>
-<p>One way we could have set up the machine learning pipeline is as follows. First, we merge the unlabeled and labeled data together into a tuple. Then we pass this (labeled, unlabeled) tuple to the neural network training program. We did not do it this way. Even while we experiment with different datasets for the transition region, the boundary data remains constant. This reflects the idea that the boundary data is a fixed property of the system PDE, rather than a variable entity. On the other hand, we are interested in experimenting with different datasets for the transition region. As such, it would have made sense to actually generate the boundary dataset inside the train.py file. However, in the end, we chose not to do this because one might like to experiment with other boundary datasets in the future, and there is also just the satisfaction of all datasets being generated from the dataset.py file.</p>
-</section>
-<section id="mathematical-discussion" class="level2">
-<h2 class="anchored" data-anchor-id="mathematical-discussion">Mathematical Discussion</h2>
-<p>Note that I am not an expert on the following matters, so I welcome any corrections, as I will not perform any rigrous deductions.</p>
-<p>Just as a function <span class="math inline">\(f(t, x)\)</span> can evolve in time, so too can a probability distribution. Further, so too can a conditional probability distribution evolve in time. In notation, we write <span class="math inline">\(p_t(x,dy)\)</span>, and this means the conitional probability density of transitioning to the infinitisimal region <span class="math inline">\(dy\)</span>, given that we are already located at point <span class="math inline">\(x\)</span>. Oh, and don’t forget that the time is <span class="math inline">\(t\)</span>. So presumably, at another time <span class="math inline">\(s\)</span>, the transition probability could look different, even if the point <span class="math inline">\(x\)</span> and the infinitisemal region <span class="math inline">\(dy\)</span> remain the same.</p>
+<section id="december-31-2025" class="level3">
+<h3 class="anchored" data-anchor-id="december-31-2025">December 31, 2025</h3>
+<p>One reason that the <code>/data/</code> folder is in the <code>.gitignore</code> file is that s3 will be used for storing data, so it doesn’t make sense to exchange data back and forth between the github and the local computer. Cookie cutter data science calls this idea “separating the codebase from the data” <a href="https://drivendata.co/blog/ccds-v2#data-storage" class="uri">https://drivendata.co/blog/ccds-v2#data-storage</a>.</p>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->

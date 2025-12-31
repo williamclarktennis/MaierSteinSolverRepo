@@ -47,5 +47,12 @@
     "title": "Getting started",
     "section": "",
     "text": "This is where you describe how to get set up on a clean install, including the commands necessary to get the raw data (using the sync_data_from_s3 command, for example), and then how to make the cleaned, final data sets."
+  },
+  {
+    "objectID": "notes-by-date.html",
+    "href": "notes-by-date.html",
+    "title": "Developer Notes",
+    "section": "",
+    "text": "December 31, 2025\nOne reason that the /data/ folder is in the .gitignore file is that s3 will be used for storing data, so it doesn’t make sense to exchange data back and forth between the github and the local computer. Cookie cutter data science calls this idea “separating the codebase from the data” https://drivendata.co/blog/ccds-v2#data-storage."
   }
 ]

@@ -1,0 +1,15 @@
+---
+title: "Developer Notes"
+---
+
+### December 31, 2025
+
+One reason that the `/data/` folder is in 
+the `.gitignore` file is that 
+s3 will be used for storing 
+data, so it doesn't make sense
+to exchange data back and forth between
+the github and the local computer. Cookie cutter 
+data science calls this idea
+"separating the codebase from the 
+data" <https://drivendata.co/blog/ccds-v2#data-storage>.
