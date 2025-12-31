@@ -12,4 +12,10 @@ to exchange data back and forth between
 the github and the local computer. Cookie cutter 
 data science calls this idea
 "separating the codebase from the 
-data" <https://drivendata.co/blog/ccds-v2#data-storage>.
+data" <https://drivendata.co/blog/ccds-v2#data-storage>
+
+Here are other key resources from today: 
+<https://git-scm.com/docs/git-credential>
+and <https://git-scm.com/docs/gitfaq#_credentials>. 
+The latter link has the question: how do I specify my 
+credentials when pushing over https?
