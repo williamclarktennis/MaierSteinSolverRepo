@@ -1,0 +1,23 @@
+project:
+  type: website
+  output-dir: docs
+
+website:
+  title: "Maier Stein Solver Documentation"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - about.qmd
+      - getting-started.qmd
+
+format:
+  html:
+    theme:
+      - cosmo
+      - brand
+    css: styles.css
+    toc: true
+
+
+

@@ -1,0 +1,64 @@
+---
+title: "docs1"
+---
+
+This is a Quarto website.
+
+To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+
+# Maier Stein Solver documentation!
+
+## Description
+
+Solve for committor function using neural networks.
+
+## Commands
+
+The Makefile contains the central entry points for common tasks related to this project.
+
+### Syncing data to cloud storage
+
+* `make sync_data_up` will use `aws s3 sync` to recursively sync files in `data/` up to `s3://maier-stein-bucket/data/`.
+* `make sync_data_down` will use `aws s3 sync` to recursively sync files from `s3://maier-stein-bucket/data/` to `data/`.
+
+## Philisophical Points
+
+In a typical machine learning pipeline, datasets, either labeled or unlabeled, are
+generated in one file, then passed to another file where the training happens. 
+The separation 
+of dataset code and training code is reflected in the cookie-cutter project organization: 
+`dataset.py` and `modeling/train.py` are two separate files.
+
+For the Maier Stein solver, there are two types of datasets at play. 
+The first kind are unlabeled datasets consisting of points in the transition region. 
+These are unlabeled because we do not know the value of the committor function at such points. 
+The second kind of dataset are labeled datasets consisting of 
+points $x \in \partial A$ labeled by zero and points $x \in \partial B$ labeled by
+one. The logic for this labeling comes from the meaning of the committor function.
+
+One way we could have set up the machine learning pipeline is as follows. First, 
+we merge the unlabeled and labeled data together into a tuple. Then we pass this 
+(labeled, unlabeled) tuple to the neural network training program. We did not do it this way.
+Even while we experiment with different datasets for the transition region, 
+the boundary data remains constant. This reflects the idea that the boundary data is 
+a fixed property of the system PDE, rather than a variable entity. On the other
+hand, we are interested in experimenting with different datasets for the transition region.
+As such, it would have made sense to actually generate the boundary dataset inside
+the train.py file. However, in the end, we chose not to do this because one might like
+to experiment with other 
+boundary datasets in the future, and there is also just the satisfaction 
+of all datasets being generated from the dataset.py file. 
+
+## Mathematical Discussion
+
+Note that I am not an expert on the following matters, so I welcome any corrections, as I will not 
+perform any rigrous deductions.
+
+Just as a function $f(t, x)$ can evolve in time, so too can a probability distribution. Further, so too can a 
+conditional probability distribution evolve in time. In notation, we write $p_t(x,dy)$, and this means
+the conitional probability density of transitioning to the infinitisimal region $dy$, given that we 
+are already located at point $x$. Oh, and don't forget that the time is $t$. 
+So presumably, at another time $s$, the transition probability could look different, 
+even if the point $x$ and the infinitisemal region $dy$ remain the same.
+
+
