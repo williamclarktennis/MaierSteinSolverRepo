@@ -19,3 +19,9 @@ Here are other key resources from today:
 and <https://git-scm.com/docs/gitfaq#_credentials>. 
 The latter link has the question: how do I specify my 
 credentials when pushing over https?
+
+
+### January 2, 2025
+
+I am checking if Github Actions actually publishes and deploys my
+website at the link: <https://williamclarktennis.github.io/MaierSteinSolverRepo/>.
