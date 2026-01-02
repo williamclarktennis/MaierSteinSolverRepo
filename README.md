@@ -6,6 +6,10 @@
 
 Solve for committor function using neural networks.
 
+## Project Documentation
+
+The documentation for this project can be found at the website: <https://williamclarktennis.github.io/MaierSteinSolverRepo/>.
+
 ## Project Organization
 
 ```
