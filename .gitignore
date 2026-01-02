@@ -1,6 +1,8 @@
 # Quarto Documentation: 
 /docs/.quarto/
 /docs/docs
+/docs/_site/
+/docs/.gitignore
 
 # Data
 /data/
