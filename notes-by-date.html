@@ -172,6 +172,13 @@ ul.task-list li input[type="checkbox"] {
 <li>The <code>MaierSteinSolver/config.py</code> file. It says to load environment variables from the .env file, but I don’t know what those would be yet.</li>
 <li>The <code>dataset.py</code> file. When I want to develop source code, should my code go into the main() function? I’m not sure how typer works, so I can’t answer this question yet. Hopefully once I get a feeling for typer, then I can start putting source code into the dataset.py file.</li>
 </ol>
+<p>For dot-env, look at: <a href="https://pypi.org/project/python-dotenv/#getting-started" class="uri">https://pypi.org/project/python-dotenv/#getting-started</a>, which is the python version.</p>
+<p>When you try to run code using the MaierSteinSolver package, you can’t run it inside of the MaierSteinSolver directory, or else you will get a ModuleNotFoundError. So get in the practice of running scripts from the command line from the root MaierSteinSolverRepo folder.</p>
+<p>I also consulted: <a href="https://peps.python.org/pep-0518/" class="uri">https://peps.python.org/pep-0518/</a>.</p>
+<p>So it turns out that the TOML file is needed for making an <code>import MaierSteinSolver</code> statement work.</p>
+<p>Now I’m looking at pip documentation: <a href="https://pip.pypa.io/en/stable/topics/local-project-installs/#editable-installs" class="uri">https://pip.pypa.io/en/stable/topics/local-project-installs/#editable-installs</a> because I want to install my own package (the MaierSteinSolver) into my virtual environment.</p>
+<p>Here is a tutorial for the pyproject.toml file: <a href="https://packaging.python.org/en/latest/guides/writing-pyproject-toml/" class="uri">https://packaging.python.org/en/latest/guides/writing-pyproject-toml/</a>.</p>
+<p>I refactored the directory structure to include a src directory, which required changing the pyproject.toml. I still need to make corresponding changes to the Makefile.</p>
 
 
 </section>
