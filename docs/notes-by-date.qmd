@@ -33,3 +33,26 @@ Why is it not working? Please work!
 I did a simple example with Python logging to gain some
 motivation for loguru, present in the 
 `dataset.py` file and other files. 
+
+See `https://docs.python.org/3/library/pathlib.html` to learn about
+`PROJ_ROOT = Path(__file__).resolve().parents[1]`
+in the `config.py` file.
+
+I'm currently uncomfortable with the following files and items:
+
+1. the `.env` file. It is currently empty. What other files
+depend on it? I'm afraid I'll have to understand this file
+before beginning development of source code.
+2. The `Makefile`. Hopefully this file can be
+ignored while I develop the source code.
+3. The `pyproject.toml` file. I think this can 
+be ignored while I develop source code. 
+4. The `MaierSteinSolver/config.py` file. It 
+says to load environment variables from the .env
+file, but I don't know what those would be yet. 
+5. The `dataset.py` file. When I want to develop source
+code, should my code go into the main() function? I'm 
+not sure how typer works, so I can't answer this question yet. 
+Hopefully once I get a feeling for typer, then
+I can start putting source code into the 
+dataset.py file. 
