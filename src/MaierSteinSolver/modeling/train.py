@@ -4,7 +4,7 @@ from loguru import logger
 from tqdm import tqdm
 import typer
 
-from Maier-Stein-Solver.config import MODELS_DIR, PROCESSED_DATA_DIR
+from MaierSteinSolver.config import MODELS_DIR, PROCESSED_DATA_DIR
 
 app = typer.Typer()
 
