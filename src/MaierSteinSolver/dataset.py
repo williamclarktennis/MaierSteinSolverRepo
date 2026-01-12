@@ -18,11 +18,17 @@ from MaierSteinSolver.config import PROCESSED_DATA_DIR, RAW_DATA_DIR, \
 
 app = typer.Typer()
 
-def make_unif_ellipse_train_dataset_csv():
+def make_checkerboard_ellipse_train_dataset_csv():
     # naive way without polar coordinates
 
-    # first take uniform sample from the rectangle
-    # [LEFT_LIM, RIGHT_LIM] \times [LOW_LIM, UP_LIM]
+    # first take uniform sample 
+    # on each axis, for instance for the x-axis:
+    # [LEFT_LIM, RIGHT_LIM] \times [LOW_LIM, UP_LIM]. 
+    # Note that the resulting mesh grid will 
+    # NOT be a uniform distribution, 
+    # but rather a checkerboard distribution. 
+    # This is a special case of where the marginals
+    # are uniform but not the joint distribution.
 
     logger.info("Processing dataset...") 
     rng = np.random.default_rng()
@@ -73,7 +79,7 @@ def make_unif_ellipse_train_dataset_csv():
     
     now = datetime.now().isoformat(timespec='minutes')
     
-    ellipse_no_A_B_df.to_csv(RAW_DATA_DIR/f"UNIF_ELLIPSE_{now}.csv", \
+    ellipse_no_A_B_df.to_csv(RAW_DATA_DIR/f"CHECKERBOARD_ELLIPSE_{now}.csv", \
                              index = False)
     logger.success("Processing dataset complete.")
     pass

@@ -8,12 +8,16 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from MaierSteinSolver.config import FIGURES_DIR, PROCESSED_DATA_DIR
+from MaierSteinSolver.config import FIGURES_DIR, PROCESSED_DATA_DIR,\
+                                    X_COORD, Y_COORD 
+
+
 
 app = typer.Typer()
 
-def scatter_plot_2D_csv(filepath: str):
+def scatter_plot_csv(filepath: str):
     df = pd.read_csv(filepath)
+    df = df[[X_COORD,Y_COORD]]
     pts = df.to_numpy()
     fig, ax = plt.subplots()
     ax.scatter(pts[:,0], pts[:,1], s=0.1)
