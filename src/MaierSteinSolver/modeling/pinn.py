@@ -31,7 +31,9 @@ class NeuralNetwork(nn.Module):
 
         assert type(layer_array) == type([])
 
-        self.linears = nn.ModuleList([nn.Linear(layer_array[i],layer_array[i+1]) for i in range(len(layer_array)-1)])
+        self.linears = nn.ModuleList(\
+            [nn.Linear(layer_array[i],layer_array[i+1]) \
+             for i in range(len(layer_array)-1)])
 
     def forward(self, X):
 
@@ -52,7 +54,8 @@ class NeuralNetwork(nn.Module):
         return X
     
 
-def get_Laplacian_partialx_partialy(q_NN: NeuralNetwork, X: torch.tensor) -> torch.tensor:
+def get_Laplacian_partialx_partialy(q_NN: NeuralNetwork, X: torch.tensor)\
+      -> torch.tensor:
     """
     
     """
@@ -112,9 +115,11 @@ def L_q(q_NN: NeuralNetwork, X:torch.tensor) -> torch.tensor:
     assert x.shape[-1] == OUT_SIZE
     assert y.shape[-1] == OUT_SIZE
 
-    laplacian_q, partial_x, partial_y = get_Laplacian_partialx_partialy(q_NN,X)
+    laplacian_q, partial_x, partial_y = \
+        get_Laplacian_partialx_partialy(q_NN, X)
 
-    lq = (x-x**3-10*x*y**2)* partial_x - (1+x**2)*y * partial_y + 0.1/2 * laplacian_q
+    lq = (x-x**3-10*x*y**2)* partial_x - (1+x**2)*y * partial_y \
+          + 0.1/2 * laplacian_q
 
     assert lq.shape[-1] == OUT_SIZE
 
@@ -132,13 +137,17 @@ class PINNTrainingVarTrainData():
         self.epochs = epochs
         self.alpha = alpha
 
-        self.training_points_on_bdy_of_A, self.training_points_on_bdy_of_B = get_points_on_A_B()
+        self.training_points_on_bdy_of_A, self.training_points_on_bdy_of_B = \
+            get_points_on_A_B()
 
         self.training_points_not_in_A_or_B = training_data
 
-        labels_for_training_pts_not_in_A_or_B = torch.zeros((len(self.training_points_not_in_A_or_B),out_size))
-        train_data = TensorDataset(self.training_points_not_in_A_or_B, labels_for_training_pts_not_in_A_or_B)
-        self.train_dataloader = DataLoader(train_data, batch_size=64, shuffle=True)
+        labels_for_training_pts_not_in_A_or_B = torch.zeros(\
+            (len(self.training_points_not_in_A_or_B),out_size))
+        train_data = TensorDataset(self.training_points_not_in_A_or_B,\
+                                    labels_for_training_pts_not_in_A_or_B)
+        self.train_dataloader = DataLoader(train_data, batch_size=64,\
+                                            shuffle=True)
     
     def train(self):
         epochs = self.epochs
@@ -158,11 +167,16 @@ class PINNTrainingVarTrainData():
             
             # compute prediction error
             pred_pts_not_in_A_or_B = L_q(self.NN,X)
-            pred_pts_on_bdy_A = math.sqrt(self.alpha) * self.NN(self.training_points_on_bdy_of_A)
-            pred_pts_on_bdy_B = math.sqrt(self.alpha) * self.NN(self.training_points_on_bdy_of_B) - math.sqrt(self.alpha)
+            pred_pts_on_bdy_A = math.sqrt(self.alpha)\
+                 * self.NN(self.training_points_on_bdy_of_A)
+            pred_pts_on_bdy_B = math.sqrt(self.alpha)\
+                  * self.NN(self.training_points_on_bdy_of_B)\
+                      - math.sqrt(self.alpha)
             
             # put errors together into one vector
-            pred_vector = torch.cat((pred_pts_not_in_A_or_B,pred_pts_on_bdy_A,pred_pts_on_bdy_B))
+            pred_vector = torch.cat((pred_pts_not_in_A_or_B, \
+                                     pred_pts_on_bdy_A, \
+                                        pred_pts_on_bdy_B))
 
             assert pred_vector.shape[-1] == out_size
             truth = torch.zeros_like(pred_vector)

@@ -38,7 +38,8 @@ RADIUS_A = 0.3
 RADIUS_B = 0.3
 Q_BDY_A = 0.0 # committor on boundary of A
 Q_BDY_B = 1.0 # committor on boundary of B
-LEFT_LIM = -1.5 # as far to the left in the 2D plane that we want to predict a committor solution
+LEFT_LIM = -1.5 # as far to the left in the 2D plane that we want to
+                # predict a committor solution
 RIGHT_LIM = 1.5 # ditto but for the right
 UP_LIM = 0.75 # ditto but for the upper limit on the y-axis
 LOW_LIM = -0.75 # ditto but for the lower limit on the y-axis

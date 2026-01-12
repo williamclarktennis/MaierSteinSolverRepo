@@ -7,12 +7,10 @@ import typer
 from torch import nn
 import torch
 
-from MaierSteinSolver.config import MODELS_DIR, PROCESSED_DATA_DIR, IN_SIZE, OUT_SIZE
+from MaierSteinSolver.config import MODELS_DIR, PROCESSED_DATA_DIR,\
+                                    IN_SIZE, OUT_SIZE
 
 app = typer.Typer()
-
-
-
 
 
 
