@@ -17,6 +17,15 @@ from MaierSteinSolver.config import PROCESSED_DATA_DIR, RAW_DATA_DIR, \
 
 app = typer.Typer()
 
+def make_ellipse_pts_csv():
+    logger.info("Processing dataset...")
+    pts_df = pd.read_csv(EXTERNAL_DATA_DIR/"MaierStein_pts.csv", \
+                         header = None)
+    pts_df = pts_df.rename(columns = { 0 : X_COORD, 1 : Y_COORD })
+    pts_df.to_csv(RAW_DATA_DIR/"Ellipse_pts.csv", index = False)
+    logger.success("Processing dataset complete.")
+    pass
+
 def make_finite_elements_prediction_csv():
     logger.info("Processing dataset...")
     pts_df = pd.read_csv(EXTERNAL_DATA_DIR/"MaierStein_pts.csv", \
