@@ -54,8 +54,9 @@ The documentation for this project can be found at the website: <https://william
         │
         ├── features.py             <- Code to create features for modeling
         │
-        ├── modeling                
+        ├── modeling             
         │   ├── __init__.py 
+        │   ├── pinn.py             <- Code to store loss function logic and neural network architecture
         │   ├── predict.py          <- Code to run model inference with trained models          
         │   └── train.py            <- Code to train models
         │

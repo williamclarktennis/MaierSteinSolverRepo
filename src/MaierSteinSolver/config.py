@@ -43,6 +43,10 @@ RIGHT_LIM = 1.5 # ditto but for the right
 UP_LIM = 0.75 # ditto but for the upper limit on the y-axis
 LOW_LIM = -0.75 # ditto but for the lower limit on the y-axis
 
+# input size and output size for neural network based on the Maier Stein model
+IN_SIZE = 2
+OUT_SIZE = 1
+
 # common csv headers:
 X_COORD = "x"
 Y_COORD = "y"

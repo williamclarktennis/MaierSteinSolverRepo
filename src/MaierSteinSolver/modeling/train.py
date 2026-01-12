@@ -4,9 +4,16 @@ from loguru import logger
 from tqdm import tqdm
 import typer
 
-from MaierSteinSolver.config import MODELS_DIR, PROCESSED_DATA_DIR
+from torch import nn
+import torch
+
+from MaierSteinSolver.config import MODELS_DIR, PROCESSED_DATA_DIR, IN_SIZE, OUT_SIZE
 
 app = typer.Typer()
+
+
+
+
 
 
 @app.command()
