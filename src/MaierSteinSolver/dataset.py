@@ -4,9 +4,66 @@ from loguru import logger
 from tqdm import tqdm
 import typer
 
-from MaierSteinSolver.config import PROCESSED_DATA_DIR, RAW_DATA_DIR
+import numpy as np
+import pandas as pd
+
+from datetime import datetime
+
+from MaierSteinSolver.config import PROCESSED_DATA_DIR, RAW_DATA_DIR, \
+                                    CENTER_A, CENTER_B, RADIUS_A, RADIUS_B, \
+                                    Q_BDY_A, Q_BDY_B
 
 app = typer.Typer()
+
+
+def make_bdy_csv(num_pts_A: int = 500, num_pts_B: int = 500):
+    # make a csv containing a uniform sample 
+    # of the boundary points from $A$ and $B$
+    rng = np.random.default_rng()
+
+    theta_A = rng.uniform(low = 0.0, high = 2 * np.pi, size = num_pts_A)
+    pts_A_xcoord = CENTER_A[0] + RADIUS_A * np.cos(theta_A)
+    pts_A_ycoord = CENTER_A[1] + RADIUS_A * np.sin(theta_A)
+    pts_A = np.concatenate((pts_A_xcoord[:, np.newaxis], \
+                            pts_A_ycoord[:, np.newaxis]), axis=1)
+    
+    theta_B = rng.uniform(low = 0.0, high = 2 * np.pi, size = num_pts_B)
+    pts_B_xcoord = CENTER_B[0] + RADIUS_B * np.cos(theta_B)
+    pts_B_ycoord = CENTER_B[1] + RADIUS_B * np.sin(theta_B)
+    pts_B = np.concatenate((pts_B_xcoord[:, np.newaxis], \
+                            pts_B_ycoord[:, np.newaxis]), axis=1)
+    
+    all_bdy_pts = np.concatenate((pts_A,pts_B))
+
+    # add committor value column and region label column:
+    pts_A_df = pd.DataFrame(pts_A, columns = ["x coord","y coord"])
+    committor_A = np.array([Q_BDY_A for i in range(pts_A_df.shape[0])])
+    committor_val_A_series = pd.Series(committor_A,\
+                                        name="Committor value")
+    region_A = np.array(["A" for i in range(pts_A_df.shape[0])])
+    region_A_series = pd.Series(region_A,\
+                                        name="Region")
+    pts_A_df = pd.concat([region_A_series, pts_A_df, committor_val_A_series], \
+                         axis = 1)
+
+    pts_B_df = pd.DataFrame(pts_B, columns = ["x coord","y coord"])
+    committor_B = np.array([Q_BDY_B for i in range(pts_B_df.shape[0])])
+    committor_val_B_series = pd.Series(committor_B,\
+                                        name="Committor value")
+    region_B = np.array(["B" for i in range(pts_B_df.shape[0])])
+    region_B_series = pd.Series(region_B,\
+                                        name="Region")
+    pts_B_df = pd.concat([region_B_series, pts_B_df, committor_val_B_series], \
+                         axis = 1)
+    
+
+    frames = [pts_A_df,pts_B_df]
+    pts_A_B_df = pd.concat(frames)
+    
+    now = datetime.now().isoformat(timespec='minutes')
+    pts_A_B_df.to_csv(RAW_DATA_DIR / f"BOUNDARY_DATA_{now}.csv")
+
+
 
 
 @app.command()

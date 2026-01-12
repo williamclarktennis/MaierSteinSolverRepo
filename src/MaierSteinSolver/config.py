@@ -30,3 +30,10 @@ try:
     logger.add(lambda msg: tqdm.write(msg, end=""), colorize=True)
 except ModuleNotFoundError:
     pass
+
+CENTER_A = [-1.0,0.0]
+CENTER_B = [1.0,0.0]
+RADIUS_A = 0.3
+RADIUS_B = 0.3
+Q_BDY_A = 0.0
+Q_BDY_B = 1.0
