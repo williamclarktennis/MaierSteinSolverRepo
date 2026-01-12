@@ -4,10 +4,20 @@ from loguru import logger
 from tqdm import tqdm
 import typer
 
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
 from MaierSteinSolver.config import FIGURES_DIR, PROCESSED_DATA_DIR
 
 app = typer.Typer()
 
+def scatter_plot_2D_csv(filepath: str):
+    df = pd.read_csv(filepath)
+    pts = df.to_numpy()
+    fig, ax = plt.subplots()
+    ax.scatter(pts[:,0], pts[:,1], s=0.1)
+    plt.show()
 
 @app.command()
 def main(

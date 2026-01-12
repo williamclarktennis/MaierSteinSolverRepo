@@ -13,9 +13,70 @@ from MaierSteinSolver.config import PROCESSED_DATA_DIR, RAW_DATA_DIR, \
                                     EXTERNAL_DATA_DIR, MODELS_DIR, \
                                     CENTER_A, CENTER_B, RADIUS_A, RADIUS_B, \
                                     Q_BDY_A, Q_BDY_B, \
-                                    X_COORD, Y_COORD, Q_LABEL
+                                    X_COORD, Y_COORD, Q_LABEL,\
+                                    LEFT_LIM, RIGHT_LIM, LOW_LIM, UP_LIM
 
 app = typer.Typer()
+
+def make_unif_ellipse_train_dataset_csv():
+    # naive way without polar coordinates
+
+    # first take uniform sample from the rectangle
+    # [LEFT_LIM, RIGHT_LIM] \times [LOW_LIM, UP_LIM]
+
+    logger.info("Processing dataset...") 
+    rng = np.random.default_rng()
+
+    num_x_pts = (RIGHT_LIM - LEFT_LIM) * 100
+    num_x_pts = int(num_x_pts)
+    num_y_pts = (UP_LIM-LOW_LIM) * 100
+    num_y_pts = int(num_y_pts)
+    x = rng.uniform(low = LEFT_LIM, high = RIGHT_LIM, size = num_x_pts)
+    y = rng.uniform(low = LOW_LIM, high = UP_LIM, size = num_y_pts)
+
+    xx, yy = np.meshgrid(x,y)
+    x_coord = xx.reshape(xx.size)
+    y_coord = yy.reshape(yy.size)
+
+    rectangle = np.concatenate((x_coord[:,np.newaxis],\
+                                y_coord[:,np.newaxis]),axis = 1)
+
+    # remove points outside of the ellipse with 
+    # major axis being the x axis and 
+    # vertices at (LEFT_LIM,0) and (RIGHT_LIM,0)
+    # and co-vertices (0,UP_LIM) and (0,LOW_LIM)
+    mask_ellipse = ((x_coord**2)/ (RIGHT_LIM**2) + \
+                    (y_coord**2) / (UP_LIM**2)) <= 1
+    x_coord = x_coord[mask_ellipse]
+    y_coord = y_coord[mask_ellipse]
+
+    ellipse = np.concatenate((x_coord[:,np.newaxis],\
+                                y_coord[:,np.newaxis]),axis = 1)
+    
+    # remove points in metastable region A:
+    mask_A = (x_coord - CENTER_A[0])**2 + \
+             (y_coord - CENTER_A[1])**2 > RADIUS_A**2
+    x_coord = x_coord[mask_A]
+    y_coord = y_coord[mask_A]
+
+    # remove points in metastable region B:
+    mask_B = (x_coord - CENTER_B[0])**2 + \
+             (y_coord - CENTER_B[1])**2 > RADIUS_B**2
+    x_coord = x_coord[mask_B]
+    y_coord = y_coord[mask_B]
+
+    ellipse_no_A_B = np.concatenate((x_coord[:,np.newaxis],\
+                                y_coord[:,np.newaxis]),axis = 1)
+
+    ellipse_no_A_B_df = pd.DataFrame(ellipse_no_A_B, \
+                                     columns=[X_COORD, Y_COORD])
+    
+    now = datetime.now().isoformat(timespec='minutes')
+    
+    ellipse_no_A_B_df.to_csv(RAW_DATA_DIR/f"UNIF_ELLIPSE_{now}.csv", \
+                             index = False)
+    logger.success("Processing dataset complete.")
+    pass
 
 def make_ellipse_pts_csv():
     logger.info("Processing dataset...")
@@ -73,7 +134,7 @@ def make_bdy_csv(num_pts_A: int = 500, num_pts_B: int = 500):
     region_A = np.array(["A" for i in range(pts_A_df.shape[0])])
     region_A_series = pd.Series(region_A,\
                                         name="Region")
-    pts_A_df = pd.concat([region_A_series, pts_A_df, committor_val_A_series], \
+    pts_A_df = pd.concat([region_A_series, pts_A_df, committor_val_A_series],\
                          axis = 1)
 
     pts_B_df = pd.DataFrame(pts_B, columns = [X_COORD,Y_COORD])
@@ -83,7 +144,7 @@ def make_bdy_csv(num_pts_A: int = 500, num_pts_B: int = 500):
     region_B = np.array(["B" for i in range(pts_B_df.shape[0])])
     region_B_series = pd.Series(region_B,\
                                         name="Region")
-    pts_B_df = pd.concat([region_B_series, pts_B_df, committor_val_B_series], \
+    pts_B_df = pd.concat([region_B_series, pts_B_df, committor_val_B_series],\
                          axis = 1)
     
 
