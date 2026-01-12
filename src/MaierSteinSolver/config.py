@@ -31,9 +31,15 @@ try:
 except ModuleNotFoundError:
     pass
 
+# the maier stein model parameters
 CENTER_A = [-1.0,0.0]
 CENTER_B = [1.0,0.0]
 RADIUS_A = 0.3
 RADIUS_B = 0.3
 Q_BDY_A = 0.0
 Q_BDY_B = 1.0
+
+# common csv headers:
+X_COORD = "x"
+Y_COORD = "y"
+Q_LABEL = "committor value"
