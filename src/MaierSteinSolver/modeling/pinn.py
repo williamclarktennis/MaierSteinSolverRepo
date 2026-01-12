@@ -9,6 +9,8 @@ import torch
 from torch.utils.data import DataLoader
 from torch.utils.data import TensorDataset
 
+import math
+
 from MaierSteinSolver.config import IN_SIZE, OUT_SIZE
 
 app = typer.Typer()
@@ -130,20 +132,29 @@ class PINNTrainingVarTrainData():
     Training implements the PINN loss function model where
     the model to be trained will learn the boundary conditions. 
     """
-    def __init__(self,NN,optimizer,loss_fn, epochs, alpha, training_data):
+    def __init__(self,NN,optimizer,loss_fn, epochs, alpha, transition_region_features, bdy_A_features, bdy_B_features):
         self.NN = NN
         self.optimizer = optimizer
         self.loss_fn = loss_fn
         self.epochs = epochs
         self.alpha = alpha
 
-        self.training_points_on_bdy_of_A, self.training_points_on_bdy_of_B = \
-            get_points_on_A_B()
+        # work around the error of inputting numpy data into torch nn:
+        mid_pts = torch.tensor(transition_region_features).float()
+        bA = torch.tensor(bdy_A_features).float()
+        bB = torch.tensor(bdy_B_features).float()
 
-        self.training_points_not_in_A_or_B = training_data
+        mid_pts.requires_grad_(True)
+        bA.requires_grad_(True)
+        bB.requires_grad_(True)
+
+        self.training_points_on_bdy_of_A, self.training_points_on_bdy_of_B = \
+            bA, bB
+
+        self.training_points_not_in_A_or_B = mid_pts
 
         labels_for_training_pts_not_in_A_or_B = torch.zeros(\
-            (len(self.training_points_not_in_A_or_B),out_size))
+            (len(self.training_points_not_in_A_or_B),OUT_SIZE))
         train_data = TensorDataset(self.training_points_not_in_A_or_B,\
                                     labels_for_training_pts_not_in_A_or_B)
         self.train_dataloader = DataLoader(train_data, batch_size=64,\
@@ -178,7 +189,7 @@ class PINNTrainingVarTrainData():
                                      pred_pts_on_bdy_A, \
                                         pred_pts_on_bdy_B))
 
-            assert pred_vector.shape[-1] == out_size
+            assert pred_vector.shape[-1] == OUT_SIZE
             truth = torch.zeros_like(pred_vector)
             loss = self.loss_fn(pred_vector,truth)
 
