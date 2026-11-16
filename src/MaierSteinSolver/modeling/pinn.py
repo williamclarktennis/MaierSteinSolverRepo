@@ -11,7 +11,8 @@ from torch.utils.data import TensorDataset
 
 import math
 
-from MaierSteinSolver.config import IN_SIZE, OUT_SIZE
+from MaierSteinSolver.config import IN_SIZE, OUT_SIZE, \
+                                    BETA, EPSILON
 
 app = typer.Typer()
 
@@ -106,7 +107,14 @@ def get_Laplacian_partialx_partialy(q_NN: NeuralNetwork, X: torch.tensor)\
 
 def L_q(q_NN: NeuralNetwork, X:torch.tensor) -> torch.tensor:
     """
-    Apply the Kolomogorov backwards operator to q_NN at X
+    Apply the Kolomogorov backwards operator to q_NN at X. 
+    We have 
+    $L = b \cdot \nabla + EPSILON/2 \Delta$,
+    where $b$ is the drift field
+    \begin{bmatrix}
+        x - x^3 - BETA x y^2 \\
+        -(1 + x^2) y
+    \end{bmatrix}
     """
 
     assert X.shape[-1] == IN_SIZE
@@ -120,8 +128,8 @@ def L_q(q_NN: NeuralNetwork, X:torch.tensor) -> torch.tensor:
     laplacian_q, partial_x, partial_y = \
         get_Laplacian_partialx_partialy(q_NN, X)
 
-    lq = (x-x**3-10*x*y**2)* partial_x - (1+x**2)*y * partial_y \
-          + 0.1/2 * laplacian_q
+    lq = (x-x**3-BETA*x*y**2)* partial_x - (1+x**2)*y * partial_y \
+          + EPSILON/2 * laplacian_q
 
     assert lq.shape[-1] == OUT_SIZE
 
@@ -164,7 +172,8 @@ class PINNTrainingVarTrainData():
         epochs = self.epochs
         loss_plot = torch.zeros(0)
         for t in range(epochs):
-            print(f"Epoch {t+1}\n-------------------------------")
+            logger.info(f"Epoch {t+1}\n-------------------------------")
+            #print(f"Epoch {t+1}\n-------------------------------")
             loss_plot = self.single_training_loop(loss_plot)
         print("Done!")
 
