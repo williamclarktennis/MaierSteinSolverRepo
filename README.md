@@ -59,7 +59,7 @@ q|_{\partial A} = 0, \qquad q|_{\partial_B}  = 1
 $$
 where $\Delta = \partial_{xx} + \partial_{yy}$ is the Laplacian.
 We denote 
-$b \cdot \nabla + \frac{\epsilon}{2} = \mathcal{L}$.
+$b \cdot \nabla + \frac{\epsilon}{2} \Delta = \mathcal{L}$.
 
 **How do we solve for the committor function?**
 
@@ -96,6 +96,36 @@ This is called
 a Physics-informed neural network 
 because the "physics" of the system, e.g. the operator $\mathcal{L}$,
 is encoded into the loss function during training.
+
+## Sampling for Training Data
+
+Although the neural network method doesn't require using training
+points (e.g. a set of points in $\mathbb R^2$ where we measure the 
+neural network) that are distributed according to the probability 
+measure of the SDE, it is still a good idea to sample data points 
+from this distribution. In other words, we just run 
+long trajectories governed by the SDE, and take the points
+this trajectory hits as training data.
+
+The Euler Maruyama discretization is used for this. 
+See `reports/REU-final-report-2022.pdf` for the details.
+
+```
+>>> from MaierSteinSolver.dataset import EulerMaruyama
+>>> EM = EulerMaruyama(1e-4)
+>>> my_path = EM.get_sample_path(1e5, [0,0])
+```
+
+This code block samples a trajectory, starting at the point $(0,0)$, 
+using 100,000 timesteps of length $10^{-4}$.
+
+```
+>>> from MaierSteinSolver.plots import plot_trajectory
+>>> plot_trajectory(my_path, 1e-4)
+```
+
+Then you will see
+![Trajectory](reports/figures/middle-start-Eu-Mar.png)
 
 ## Project Documentation
 
