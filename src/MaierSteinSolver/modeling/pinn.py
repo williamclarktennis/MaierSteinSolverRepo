@@ -140,7 +140,8 @@ class PINNTrainingVarTrainData():
     Training implements the PINN loss function model where
     the model to be trained will learn the boundary conditions. 
     """
-    def __init__(self,NN,optimizer,loss_fn, epochs, alpha, transition_region_features, bdy_A_features, bdy_B_features):
+    def __init__(self,NN,optimizer,loss_fn, epochs, alpha, transition_region_features,\
+                  bdy_A_features, bdy_B_features):
         self.NN = NN
         self.optimizer = optimizer
         self.loss_fn = loss_fn
@@ -210,6 +211,6 @@ class PINNTrainingVarTrainData():
             if batch % 100 == 0:
                 loss, current = loss.item(), batch * len(X)
                 loss_plot = torch.cat((loss_plot, torch.tensor([loss])))
-                print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
+                logger.info(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
         
         return loss_plot
