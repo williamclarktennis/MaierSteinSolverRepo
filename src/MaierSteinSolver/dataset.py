@@ -6,6 +6,9 @@ import typer
 
 import numpy as np
 import pandas as pd
+import torch
+
+import math
 
 from datetime import datetime
 
@@ -14,7 +17,8 @@ from MaierSteinSolver.config import PROCESSED_DATA_DIR, RAW_DATA_DIR, \
                                     CENTER_A, CENTER_B, RADIUS_A, RADIUS_B, \
                                     Q_BDY_A, Q_BDY_B, \
                                     X_COORD, Y_COORD, Q_LABEL,\
-                                    LEFT_LIM, RIGHT_LIM, LOW_LIM, UP_LIM
+                                    LEFT_LIM, RIGHT_LIM, LOW_LIM, UP_LIM,\
+                                    EPSILON, BETA
 
 app = typer.Typer()
 
@@ -85,6 +89,10 @@ def make_checkerboard_ellipse_train_dataset_csv():
     pass
 
 def make_ellipse_pts_csv():
+    # Basically just add headers to the 
+    # MaierStein_pts.csv from the external dir, but leave that unchanged
+    # and create new one with the headers
+
     logger.info("Processing dataset...")
     pts_df = pd.read_csv(EXTERNAL_DATA_DIR/"MaierStein_pts.csv", \
                          header = None)
@@ -94,6 +102,10 @@ def make_ellipse_pts_csv():
     pass
 
 def make_finite_elements_prediction_csv():
+    # Basically just put the "MaierStein_q_FEM.csv", 
+    # which is one column of data, into a csv with 3 columns 
+    # of data.
+
     logger.info("Processing dataset...")
     pts_df = pd.read_csv(EXTERNAL_DATA_DIR/"MaierStein_pts.csv", \
                          header = None)
@@ -105,7 +117,7 @@ def make_finite_elements_prediction_csv():
 
     FEM_pts_q_df = pd.concat([pts_df, FEM_q_df], axis = 1)
 
-    FEM_pts_q_df.to_csv(MODELS_DIR / "FEM_Commitor.csv", index=False)
+    FEM_pts_q_df.to_csv(PROCESSED_DATA_DIR / "FEM_Commitor.csv", index=False)
     logger.success("Processing dataset complete.")
     pass
 
@@ -162,6 +174,232 @@ def make_bdy_csv(num_pts_A: int = 500, num_pts_B: int = 500):
     logger.success("Processing dataset complete.")
 
 
+class EulerMaruyama():
+    """
+    Sample the SDE
+    d(x,y) = b(x,y) dt + \sqrt{\epsilon} dw_t
+
+    using the Euler Maruyama discretization.
+    """
+    def __init__(self, delta_t):
+        # delta_t is the time step
+        # for example, use delta_t = 1e-4.
+        self.delta_t = delta_t
+
+    def get_b_of_x_y(self, x_y):
+        """ Get the drift vector at the point x_y."""
+        # x_y should be array of shape (2,1)
+        # where x = x_y[0] and 
+        # y = x_y[1]
+        b_of_x_y = np.zeros((2,1))
+        b_of_x_y[0] = x_y[0] - x_y[0]**3 - BETA * x_y[0] * x_y[1] ** 2
+        b_of_x_y[1] = -(1+x_y[0]**2)* x_y[1]
+        return b_of_x_y
+
+    def get_sample_path(self, n_iterations, init_point):
+        # init_point must be shape (2,1)
+        init_point = np.array(init_point).reshape(2,1)
+        n_iterations = int(n_iterations)
+
+        # we will have sample_path[0] = [0,0], [-1,0], or [1,0], or init_point
+        sample_path = np.zeros((n_iterations,2,1))
+        sample_path[0] = init_point
+
+        # run simulation
+        for i in tqdm(range(n_iterations-1)):
+
+            # get value of b at current sample point
+            b_of_x_y = self.get_b_of_x_y(sample_path[i])
+
+            # get guassian sample with mean 0 and variance delta_t
+            # because delta_t increments of Brownian motion have this property.
+            # since scale is stand. dev., we have stan-dev = math.sqrt(delta_t)
+            stan_dev = np.sqrt(self.delta_t)
+            weiner = np.random.normal(loc = 0.0, scale = stan_dev, size = (2,1)) 
+
+            # compute next sample point: 
+            sample_path[i+1] = sample_path[i] + b_of_x_y * self.delta_t + np.sqrt(EPSILON) * weiner
+
+        return sample_path
+
+
+class Metadynamics():
+    """
+    Sampling according to Section 3.1 in 
+    "reports/A_neural_network_based_solver_for_quantifying_transition_processes_in_nongradient_SDEs.pdf"
+    """
+    def __init__(self, delta_t = 1e-3, iterations = int(1e5),\
+                  tau = int(1e3), height_param = 0.2, width_param = 0.025, delta = 0.007):
+        """
+        - delta_t: the time step for the dynamics
+        - iterations: how many iterations to run the modified Euler Maruyama simulation
+        - tau: deposit a Gaussian every tau steps
+        - height_param: scales the height of the Gaussian deposit (e.g.
+            higher value means elongated Gaussian bump)
+        - width_param: scales the width of the Gaussian bumps
+        
+        - iterations \approx tau * number of deposits
+        So that iterations/tau is approximately the number of Gaussians that
+        will be deposited.
+        """
+        self.delta_t = delta_t
+        self.iterations = iterations
+        self.tau = tau
+        self.height_param = height_param
+        self.width_param = width_param
+        self.delta = delta
+
+    def get_guassian_locations(self):
+        # 2 = in_size of neural network.
+        # sample_path = torch.zeros((iterations,2)).requires_grad_(True)
+        sample_path = np.zeros((self.iterations,2))
+
+        ind = [] # keep track of the indices for the Gaussian deposits
+
+        sqrt_eps = math.sqrt(EPSILON)
+
+        for i in tqdm(range(self.iterations-1)): # subtract 1 because of sample_path[i+1] below
+            if i % self.tau == 0:
+                ind += [i]
+            
+            # get guassian sample with mean 0 and variance delta_t.
+            # since scale is stand. dev., we have stan-dev = math.sqrt(delta_t)
+            # stan_dev = math.sqrt(delta_t) * torch.ones(2)
+            stan_dev = math.sqrt(self.delta_t)
+            # mean = torch.zeros(2)
+            mean = 0
+            dW = np.random.default_rng().normal(mean, stan_dev, (2,))
+
+            # dW = torch.normal(mean = mean, std = stan_dev) 
+
+            # find out how many guassian deposits have been dropped so far:
+            # curr_num_g_l = i//tau + 1 # rounds down to nearest integer
+
+            # pick out the guassian locations from the sample_path: 
+            # ind = torch.linspace(0,tau * (curr_num_g_l-1),curr_num_g_l, dtype = int)
+            g_l = sample_path[ind]
+
+            b= self.B(sample_path[i], g_l)
+
+            # work around the error: "a view of a leaf Variable that requires grad is being used in an in-place operation."
+            #with torch.no_grad():
+            #    sample_path[i+1] = sample_path[i] +  b * self.delta_t + sqrt_eps * dW
+
+            sample_path[i+1] = sample_path[i] + b * self.delta_t + sqrt_eps * dW
+
+        # pick out the guassian locations from the sample_path: 
+        #ind = torch.linspace(0,tau * (num_g_l-1),num_g_l, dtype=int)
+        # ind = np.linspace(0, iterations - 1, self.tau)
+
+        return sample_path[ind], sample_path
+
+    def run_biased_sample_path(self, num_pts, g_l):
+        # sample_path = torch.zeros((num_pts,2)).requires_grad_(True)
+        sample_path = np.zeros((num_pts, 2))
+
+        sqrt_eps = math.sqrt(EPSILON)
+        for i in tqdm(range(num_pts-1)):
+            # get guassian sample with mean 0 and variance delta_t.
+            # since scale is stand. dev., we have stan-dev = math.sqrt(delta_t)
+            # stan_dev = math.sqrt(self.delta_t) * torch.ones(2)
+            stan_dev = math.sqrt(self.delta_t)
+            # mean = torch.zeros(2)
+            mean = 0.0
+            # dW = torch.normal(mean = mean, std = stan_dev)
+            dW = np.random.default_rng().normal(mean, stan_dev, (2,))
+
+            # get biased b field vector
+            b= self.B(sample_path[i], g_l)
+
+            # work around the error: "a view of a leaf Variable that requires grad is being used in an in-place operation."
+            with torch.no_grad():
+                sample_path[i+1] = sample_path[i] +  b * self.delta_t + sqrt_eps * dW
+
+        return sample_path
+
+    def V_bias(self, sample_point, g_l):
+        """
+        This scalar valued function will be differentiated, 
+        so it needs to be in Torch, not NumPy.
+        """
+        # sample_point is shape (2,)
+        # g_l is shape (x,2) for x a natural number
+
+        assert sample_point.shape == torch.Size([2])
+
+        # we need |g_l| copies of  
+        s = sample_point.repeat(g_l.shape[0],1) # what does this do?
+        # s = np.tile(sample_point, (g_l.shape[0], 1))
+
+        arg = ((g_l[:,0]-s[:,0])/self.width_param)**2 + \
+            ((g_l[:,1]-s[:,1])/self.width_param)**2
+
+        v_bias = torch.sum(self.height_param * torch.exp(-1/2 * arg))
+        # v_bias = np.sum(self.height_param * np.exp(-1/2 * arg))
+    
+        return v_bias
+
+    def B(self, sample_point, g_l):
+        """
+        B = b_field(sample_path[i]) + \nabla V_bias(sample_path[i]). 
+        """
+        # convert to torch tensor to do the differentiation:
+        sam_pt_tch = torch.tensor(sample_point, requires_grad=True)
+        g_l_tch = torch.tensor(g_l, requires_grad=True)
+
+        # self.V_bias is the function to differentiate
+        # self.V_bias is a scalar-valued function
+        V_bias_output = self.V_bias(sam_pt_tch, g_l_tch)
+
+        # vector_1 = torch.ones_like(V_bias_output)
+
+        #gradient_V_bias = torch.autograd.grad(outputs= V_bias_output,\
+        #    inputs= (sample_point,g_l),grad_outputs=vector_1)[0]
+
+        gradient_V_bias = torch.autograd.grad(outputs= V_bias_output,\
+                    inputs= (sam_pt_tch, g_l_tch))[0]
+        # I don't think I need grad_outputs...
+        # Isn't 
+        # what is happening here? 
+
+        assert gradient_V_bias.shape == torch.Size([2]) # first component is 
+        # partial derivate wrt 1st coordinate, the second component 
+        # is the partial derivative wrt 2nd coordinate
+
+        # Covert to numpy, since the differentiation
+        # is over:
+        grad_V_bias_np = gradient_V_bias.detach().cpu().numpy()
+
+        x = sample_point[0]
+        y = sample_point[1]
+        #b_field = torch.tensor([x-x**3-BETA* x* y**2, -(1+x**2)*y])
+        b_field = np.array([x-x**3-BETA* x* y**2, -(1+x**2)*y])
+
+        out = b_field - grad_V_bias_np
+
+        assert out.shape == torch.Size([2])
+
+        return out
+
+def get_delta_rarified_sample_path(sample_path, delta):
+    """
+    - sample_path: the sample path to be delta-rarified
+    - delta: parameter for delta-rarification, e.g.
+                each point will be delta distance away from any neighbors
+    """
+    N = len(sample_path)
+    mask = torch.ones((N,))
+    delta2 = delta**2
+    for k in tqdm(range(N)):
+        if mask[k]==1:
+            dist2 = (sample_path[:,0]-sample_path[k,0])**2 + (sample_path[:,1]-sample_path[k,1])**2
+            ind = torch.argwhere(dist2 < delta2)
+            mask[ind] = 0
+            mask[k]=1
+
+    ind = torch.argwhere(mask==1)
+    out = torch.squeeze(sample_path[ind])
+    return out
 
 @app.command()
 def main(
@@ -170,14 +408,11 @@ def main(
     output_path: Path = PROCESSED_DATA_DIR / "dataset.csv",
     # ----------------------------------------------
 ):
-    # ---- REPLACE THIS WITH YOUR OWN CODE ----
-    logger.info("Processing dataset...")
-    for i in tqdm(range(10), total=10):
-        if i == 5:
-            logger.info("Something happened for iteration 5.")
+    logger.info("METADYNAMICS")
+    M = Metadynamics()
+    G_L, full_path = M.get_guassian_locations()
     logger.success("Processing dataset complete.")
-    # -----------------------------------------
-
+    
 
 if __name__ == "__main__":
     app()
