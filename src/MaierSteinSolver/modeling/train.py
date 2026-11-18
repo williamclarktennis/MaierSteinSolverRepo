@@ -21,20 +21,32 @@ app = typer.Typer()
 @app.command()
 def main(
     # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----
-    boundary_data_path: Path = PROCESSED_DATA_DIR / "BOUNDARY_DATA_2026-01-12T12:05.csv",
+    hidden_layers: str = "20,20",
+    learning_rate: str = "1.0",
     transition_region_path: Path = PROCESSED_DATA_DIR / "CHECKERBOARD_ELLIPSE_2026-01-12T17:43.csv",
+    boundary_data_path: Path = PROCESSED_DATA_DIR / "BOUNDARY_DATA_2026-01-12T12:05.csv",
     model_path: Path = MODELS_DIR / "model.pt",
     # -----------------------------------------
 ):
-    # ---- REPLACE THIS WITH YOUR OWN CODE ----
-    logger.info("Training some model...")
-    for i in tqdm(range(10), total=10):
-        if i == 5:
-            logger.info("Something happened for iteration 5.")
-    logger.success("Modeling training complete.")
-    # -----------------------------------------
+    """
+    Parameters: 
+        - hidden_layers: str. Example: "20,25,30" means the first hidden
+            layer has 20 nodes, the second has 25, and the third has 30. 
+            Make sure that there are commas. If using typer, use, e.g. 
+            `typer train.py run --hidden-layers 20,25,20`
+        
+        - learning_rate: str. Example: "1.0." The solver sometimes didn't
+            converge with 10.0 learning rate.
 
-    layer_array = [IN_SIZE, 20, OUT_SIZE]
+        - transition_region_path: str of a filepath. This should be a .csv file
+            containing the data points in the transition region.
+
+    """
+
+    hidden_layers = hidden_layers.split(",")
+    hidden_layers = [int(y) for y in hidden_layers]
+
+    layer_array = [IN_SIZE] + hidden_layers + [OUT_SIZE]
     model = NeuralNetwork(layer_array=layer_array)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
@@ -53,7 +65,7 @@ def main(
 
     my_training_object = PINNTrainingVarTrainData(model, optimizer,\
                                     loss_fn, epochs = 20,\
-                                    alpha= 10.0,\
+                                    alpha= float(learning_rate),\
                                     transition_region_features=ellipse_features,\
                                     bdy_A_features=bdy_A_features,\
                                     bdy_B_features=bdy_B_features)
