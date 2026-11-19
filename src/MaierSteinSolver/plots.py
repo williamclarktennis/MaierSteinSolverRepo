@@ -43,9 +43,37 @@ def plot_q(
     y = df[Y_COORD].to_numpy()
     q = df[Q_LABEL].to_numpy()
     fig, ax = plt.subplots()
-    s = ax.scatter(x, y, c= q, s= 1)
+    s = ax.scatter(x, y, c= q, s= 5)
     fig.colorbar(s)
     return fig, ax
+
+def plot_q_side_by_side(
+        filepath: Path = PROCESSED_DATA_DIR / "test_predictions.csv"
+):
+    fig, axs = plt.subplots(1,2)
+    # plot FEM committor: 
+    df = pd.read_csv(PROCESSED_DATA_DIR/"FEM_Commitor.csv")
+    df = df[[X_COORD,Y_COORD,Q_LABEL]]
+    x = df[X_COORD].to_numpy()
+    y = df[Y_COORD].to_numpy()
+    q = df[Q_LABEL].to_numpy()
+    im0 = axs[0].scatter(x,y,c = q, s = 5, vmin = 0.0, vmax = 1.0)
+    axs[0].set_title("FEM Committor")
+
+    # plot model committor:
+    df = pd.read_csv(filepath)
+    df = df[[X_COORD,Y_COORD,Q_LABEL]]
+    x = df[X_COORD].to_numpy()
+    y = df[Y_COORD].to_numpy()
+    q = df[Q_LABEL].to_numpy()
+    im1 = axs[1].scatter(x,y,c = q, s = 5, vmin = 0.0, vmax = 1.0)
+    axs[1].set_title("Model Committor")
+
+    # common color bar:
+    cbar = fig.colorbar(im0, ax=[axs[0], axs[1]], shrink=0.8)
+    cbar.set_label('Committor Value')
+
+    plt.show()
 
 def compare_fem_absolute(
         model_prediction_path: Path = PROCESSED_DATA_DIR / "test_predictions.csv",
@@ -73,9 +101,11 @@ def compare_fem_absolute(
 
     # plot absolute difference:
     fig, ax = plt.subplots()
-    s = ax.scatter(x, y, c= q_ab, s= 1)
+    s = ax.scatter(x, y, c= q_ab, s= 10)
     fig.colorbar(s)
-    return fig, ax
+
+    plt.show()
+    # return fig, ax
 
 def get_color(n_iterations):
     # the paths data points should grow lighter and lighter:
@@ -148,9 +178,14 @@ def put_circles_around_A_and_B(ax):
     ax.plot(ptsA[:,0],ptsA[:,1],linewidth = 2,c = 'y')
     ax.plot(ptsB[:,0],ptsB[:,1],linewidth = 2,c = 'r')
 
-def plot_trajectory(sample_path, delta_t = 1e-4):
+def plot_trajectory(sample_path, delta_t = 1e-4, \
+                    with_direction_field = True, \
+                    with_comments = True, \
+                        dot_size = 1.0):
     # sample_path should be numpy array of shape (a,b,c)
-    # delta_t is the time step used for the Euler Maruyama simulation
+    # delta_t is the time step used for the Euler Maruyama simulation, 
+    # which is just used to display the time interval on the 
+    # plot.
 
     # number of points in the sample path:
     n_iterations = sample_path.shape[0]
@@ -160,11 +195,12 @@ def plot_trajectory(sample_path, delta_t = 1e-4):
 
     fig, ax = plt.subplots()
 
-    # plot the Maier Stein drift field: 
-    make_direction_field(ax)
+    if with_direction_field:
+        # plot the Maier Stein drift field: 
+        make_direction_field(ax)
 
     # plot the trajectory with lighter and lighter color:
-    ax.scatter(sample_path[:,0], sample_path[:,1], s=1, c=color)
+    ax.scatter(sample_path[:,0], sample_path[:,1], s=dot_size, c=color)
 
     # plot the equilibrium points of the Maier Stein system:
     plot_equilibrium_points(ax)
@@ -180,8 +216,10 @@ def plot_trajectory(sample_path, delta_t = 1e-4):
 
     ax.set_xlabel("x axis")
     ax.set_ylabel("y axis")
-    ax.set_title(f"Maier Stein SDE Solution on time interval [0,{T}] with initial point ({init_pt[0,0]}, {init_pt[1,0]})")
-    ax.text(-1,-1, "Solution grows lighter as time increases", bbox = dict(boxstyle="round", fc="0.8", pad=0.3))
+    if with_comments:
+        ax.set_title(f"Maier Stein SDE Solution on time interval [0,{T}] with initial point ({init_pt[0]}, {init_pt[1]})")
+        ax.text(-1,-1, "Solution grows lighter as time increases", bbox = \
+                dict(boxstyle="round", fc="0.8", pad=0.3))
 
     plt.show()
 

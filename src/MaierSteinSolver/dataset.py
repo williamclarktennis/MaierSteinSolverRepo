@@ -88,6 +88,27 @@ def make_checkerboard_ellipse_train_dataset_csv():
     logger.success("Processing dataset complete.")
     pass
 
+def removeA_B(data):
+    # the goal is to remove the points that fall in
+    # one of the metastable regions A or B.
+    # Assume data is shape (n,2).
+    mask_A = (data[:,0]- CENTER_A[0])**2 + (data[:,1] - CENTER_A[1]) ** 2 > RADIUS_A ** 2
+    mask_B = (data[:,0]- CENTER_B[0])**2 + (data[:,1] - CENTER_B[1]) ** 2 > RADIUS_B ** 2
+    mask = np.logical_and(mask_A, mask_B)
+    return data[mask]
+
+def points_to_csv(data, filepath = None):
+    # goal is to save points in R^2 to 
+    # a csv with first line containing "x, y"
+    # as column headers.
+    # assume data is (n,2).
+    df = pd.DataFrame(data, columns = [X_COORD, Y_COORD])
+    if filepath == None:
+        now = datetime.now().isoformat(timespec='minutes')
+        df.to_csv(PROCESSED_DATA_DIR/f"metadynamics_sample_{now}.csv", index = False)
+    else: 
+        df.to_csv(filepath, index = False)
+
 def make_ellipse_pts_csv():
     # Basically just add headers to the 
     # MaierStein_pts.csv from the external dir, but leave that unchanged
@@ -186,40 +207,26 @@ class EulerMaruyama():
         # for example, use delta_t = 1e-4.
         self.delta_t = delta_t
 
-    def get_b_of_x_y(self, x_y):
-        """ Get the drift vector at the point x_y."""
-        # x_y should be array of shape (2,1)
-        # where x = x_y[0] and 
-        # y = x_y[1]
-        b_of_x_y = np.zeros((2,1))
-        b_of_x_y[0] = x_y[0] - x_y[0]**3 - BETA * x_y[0] * x_y[1] ** 2
-        b_of_x_y[1] = -(1+x_y[0]**2)* x_y[1]
-        return b_of_x_y
-
     def get_sample_path(self, n_iterations, init_point):
-        # init_point must be shape (2,1)
-        init_point = np.array(init_point).reshape(2,1)
+        init_point = np.array(init_point)
         n_iterations = int(n_iterations)
-
-        # we will have sample_path[0] = [0,0], [-1,0], or [1,0], or init_point
-        sample_path = np.zeros((n_iterations,2,1))
+        sample_path = np.zeros((n_iterations,2))
         sample_path[0] = init_point
-
         # run simulation
         for i in tqdm(range(n_iterations-1)):
-
             # get value of b at current sample point
-            b_of_x_y = self.get_b_of_x_y(sample_path[i])
-
+            x = sample_path[i,0]
+            y = sample_path[i,1]
+            b = np.array([x - x**3 - BETA * x * y ** 2, \
+                          - (1 + x**2) * y])
             # get guassian sample with mean 0 and variance delta_t
             # because delta_t increments of Brownian motion have this property.
             # since scale is stand. dev., we have stan-dev = math.sqrt(delta_t)
             stan_dev = np.sqrt(self.delta_t)
-            weiner = np.random.normal(loc = 0.0, scale = stan_dev, size = (2,1)) 
-
+            mean = 0.0
+            dW = np.random.normal(loc = mean, scale = stan_dev, size = (2,)) 
             # compute next sample point: 
-            sample_path[i+1] = sample_path[i] + b_of_x_y * self.delta_t + np.sqrt(EPSILON) * weiner
-
+            sample_path[i+1] = sample_path[i] + b * self.delta_t + np.sqrt(EPSILON) * dW
         return sample_path
 
 
@@ -400,6 +407,22 @@ def get_delta_rarified_sample_path(sample_path, delta):
     ind = torch.argwhere(mask==1)
     out = torch.squeeze(sample_path[ind])
     return out
+
+def delta_rarify(data, delta = 7e-3):
+    # iteratively enforce that all points 
+    # are distance delta from each other.
+    # Assume data is numpy array
+    # of shape (n,2). 
+    N = len(data)
+    mask = np.ones((N,))
+    delta2 = delta ** 2
+    for k in tqdm(range(N)):
+        if mask[k]==1:
+            # distance to point at index k, squared:
+            dist2 = (data[:,0] - data[k,0])**2 + (data[:,1]-data[k,1])**2
+            mask[dist2 < delta2] = 0
+            mask[k] = 1
+    return data[mask == 1]
 
 @app.command()
 def main(
