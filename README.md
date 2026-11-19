@@ -108,7 +108,7 @@ long trajectories governed by the SDE, and take the points
 this trajectory hits as training data.
 
 The Euler Maruyama discretization is used for this. 
-See `reports/REU-final-report-2022.pdf` for the details.
+See Section 2.5 in `reports/REU-final-report-2022.pdf` for the details.
 
 ```
 >>> from MaierSteinSolver.dataset import EulerMaruyama
@@ -126,6 +126,165 @@ using 100,000 timesteps of length $10^{-4}$.
 
 Then you will see
 ![Trajectory](reports/figures/middle-start-Eu-Mar.png)
+
+## Enhanced Sampling
+
+Since trajectories spend too much time in the equilibrium 
+regions, we modify the drift field. The resulting
+behavior is that trajectories sample far more of the transition
+region $\Omega$ compared to a typical trajectory.
+This is called metadynamics, and is implemented in the 
+class Metadynamics. See section 3.1 in `reports/A_neural_network_based_solver_for_quantifying_transition_processes_in_nongradient_SDEs.pdf` for the details on metadynamics. 
+
+```
+>>> from MaierSteinSolver.dataset import Metadynamics
+>>> M = Metadynamics()
+>>> G_L, sam_path = M.get_guassian_locations()
+>>> from MaierSteinSolver.plots import plot_trajectory
+>>> plot_trajectory(G_L, delta_t = 1e-4, with_direction_field = False, with_comments = False)
+```
+We've plotted the locations of the Gaussian deposits that
+impact the drift field. Each dot provides a small gradient 
+that the particle would have to work against to get closer
+to that point. In other words, the Gaussian deposit increases the
+potential energy at each dot.
+
+![Gaussian deposits](reports/figures/g-locations.png)
+
+```
+>>> plot_trajectory(sam_path)
+```
+Plotting the sample path with the modified drift
+shows that it visits more area, than the Euler-Maruyama simulation.
+
+![Sample Path](reports/figures/metadynamics1.png)
+
+## Training
+
+Now we use the command line (bash) instead of the python
+interpreter.
+
+First we set up a PROJ_ROOT variable so we don't 
+have to do copy and pasting later on.
+```
+(.venv) ➜  MaierSteinSolverRepo git:(main) ✗ export PROJ_ROOT=$(python -c "from MaierSteinSolver.config import PROJ_ROOT; print(PROJ_ROOT)")
+```
+Next we navigate to the modeling folder. 
+```
+(.venv) ➜  MaierSteinSolverRepo git:(main) ✗ cd src/MaierSteinSolver/modeling
+```
+
+Next, we want to run `train.py` using the typer CLI. 
+One illustration of typer is the following command line
+output when we type `typer train.py run --help`. 
+```
+(.venv) ➜  modeling git:(main) ✗ typer train.py run --help
+2026-11-19 11:17:20.717 | INFO     | MaierSteinSolver.config:<module>:11 - PROJ_ROOT path is: /Users/commented-out
+                                                                                                                              
+ Usage: typer [PATH_OR_MODULE] run [OPTIONS]                                                                                  
+                                                                                                                              
+ Parameters:  - hidden_layers: str. Example: "20,25,30" means the first hidden     layer has 20 nodes, the second has 25, and 
+ the third has 30.      Make sure that there are commas. If using typer, use, e.g.      `typer train.py run --hidden-layers   
+ 20,25,20`                                                                                                                    
+                                                                                                                              
+ - learning_rate: str. Example: "1.0." The solver sometimes didn't                                                            
+     converge with 10.0 learning rate.                                                                                        
+                                                                                                                              
+ - transition_region_path: str of a filepath. This should be a .csv file                                                      
+     containing the data points in the transition region.                                                                     
+                                                                                                                              
+╭─ Options ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --hidden-layers                 TEXT  [default: 20,20]                                                                     │
+│ --learning-rate                 TEXT  [default: 1.0]                                                                       │
+│ --transition-region-path        PATH  [default:                                                                            │
+│                                       /Users/commented-out │
+│ --boundary-data-path            PATH  [default:                                                                            │
+│                                       /Users/commented-out │
+│ --model-path                    PATH  [default:                                                                            │
+│                                       /Users/commented-out │
+│ --help                                Show this message and exit.                                                          │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+```
+
+Now let's train a model with 3 hidden layers, each having
+30 nodes. Let's train this model on the training data we produced
+from the previous metadynamics routine, namely, `enhanced_sample_21637pts.csv`.
+We save the model to the file
+`model-30-30-30.pt`.
+
+```
+(.venv) ➜  modeling git:(main) ✗ typer train.py run --hidden-layers 30,30,30 --transition-region-path "$PROJ_ROOT/data/processed/enhanced_sample_21637pts.csv" --model-path "$PROJ_ROOT/models/model-30-30-30.pt"
+```
+The output at the command line is 
+```
+2026-11-19 11:43:48.418 | INFO     | MaierSteinSolver.config:<module>:11 - PROJ_ROOT path is: /Users/-
+MaierStein-Solver-CookieCutter-parent/MaierSteinSolverRepo
+2026-11-19 11:43:50.049 | INFO     | MaierSteinSolver.modeling.pinn:train:176 - Epoch 1
+-------------------------------
+2026-11-19 11:43:50.108 | INFO     | MaierSteinSolver.modeling.pinn:single_training_loop:214 - loss: 0.255380  [    0/21637]
+2026-11-19 11:43:50.653 | INFO     | MaierSteinSolver.modeling.pinn:single_training_loop:214 - loss: 0.003998  [ 6400/21637]
+2026-11-19 11:43:51.148 | INFO     | MaierSteinSolver.modeling.pinn:single_training_loop:214 - loss: 0.003375  [12800/21637]
+2026-11-19 11:43:51.636 | INFO     | MaierSteinSolver.modeling.pinn:single_training_loop:214 - loss: 0.003668  [19200/21637]
+2026-11-19 11:43:51.822 | INFO     | MaierSteinSolver.modeling.pinn:train:176 - Epoch 2
+-------------------------------
+2026-11-19 11:43:51.828 | INFO     | MaierSteinSolver.modeling.pinn:single_training_loop:214 - loss: 0.002423  [    0/21637]
+2026-11-19 11:43:52.324 | INFO     | MaierSteinSolver.modeling.pinn:single_training_loop:214 - loss: 0.002692  [ 6400/21637]
+2026-11-19 11:43:52.802 | INFO     | MaierSteinSolver.modeling.pinn:single_training_loop:214 - loss: 0.003557  [12800/21637]
+2026-11-19 11:43:53.284 | INFO     | MaierSteinSolver.modeling.pinn:single_training_loop:214 - loss: 0.003447  [19200/21637]
+2026-11-19 11:43:53.470 | INFO     | MaierSteinSolver.modeling.pinn:train:176 - Epoch 3
+-------------------------------
+```
+
+## Testing
+
+We continue with the terminal 
+session from the above section on training.
+The next step is to see how the model, 
+saved at `PROJ_ROOT/models/model-30-30-30.pt`, 
+evaluates the canonical test data, saved
+at `PROJ_ROOT/data/processed/Ellipse_pts.csv`.
+We will save the model's predictions 
+at `PROJ_ROOT/data/processed/predictions-30-30-30.csv`.
+
+```
+(.venv) ➜  modeling git:(main) ✗ typer predict.py run --hidden-layers 30,30,30 --features-path "$PROJ_ROOT/data/processed/Ellipse_pts.csv" --model-path "$PROJ_ROOT/models/model-30-30-30.pt" --predictions-path "$PROJ_ROOT/data/processed/predictions-30-30-30.csv"
+```
+The command line output is...
+```
+2026-11-19 13:47:11.576 | INFO     | MaierSteinSolver.config:<module>:11 - PROJ_ROOT path is: /Users/commented-out
+2026-11-19 13:47:11.592 | INFO     | predict.py:main:29 - Performing inference for model based on NN with [30, 30, 30] hidden layer structure.
+2026-11-19 13:47:11.667 | SUCCESS  | predict.py:main:47 - Inference complete.
+```
+
+Next, we enter the python interpreter
+and plot the (30,30,30) layer model's committor function
+against the committor function produced by the finite
+element's method.
+
+```
+>>> from MaierSteinSolver.plots import plot_q_side_by_side
+>>> from MaierSteinSolver.config import PROCESSED_DATA_DIR
+>>> plot_q_side_by_side(PROCESSED_DATA_DIR/"predictions-30-30-30.csv")
+```
+
+We get:
+
+![Model Committor function](reports/figures/side-by-side.png)
+
+Next we plot the absolute difference between
+the ground truth FEM committor and the [30,30,30] layer
+model committor. 
+
+```
+>>> from MaierSteinSolver.config import PROCESSED_DATA_DIR
+>>> from MaierSteinSolver.plots import compare_fem_absolute
+>>> compare_fem_absolute(PROCESSED_DATA_DIR/"predictions-30-30-30.csv")
+```
+We get:
+
+![Absolute error](reports/figures/absolute-error.png)
+
+
 
 ## Project Documentation
 
