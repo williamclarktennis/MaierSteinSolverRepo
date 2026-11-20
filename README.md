@@ -159,6 +159,30 @@ shows that it visits more area, than the Euler-Maruyama simulation.
 
 ![Sample Path](reports/figures/metadynamics1.png)
 
+Here is a full routine
+
+```
+>>> from MaierSteinSolver.dataset import Metadynamics
+>>> M = Metadynamics()
+>>> G_L, path1 = M.get_guassian_locations()
+>>> from MaierSteinSolver.plots import plot_trajectory
+>>> plot_trajectory(G_L, delta_t = 1e-4, with_direction_field = False, with_comments = False)
+>>> path_biased = M.run_biased_sample_path(500000, G_L)
+>>> plot_trajectory(path_biased, dot_size = 0.001)
+>>> from MaierSteinSolver.dataset import removeA_B
+>>> path_no_A_B = removeA_B(path_biased)
+>>> plot_trajectory(path_no_A_B, dot_size = 0.001)
+>>> from MaierSteinSolver.dataset import delta_rarify
+>>> path_r = delta_rarify(path_no_A_B)
+>>> plot_trajectory(path_r, dot_size = 0.001)
+>>> from MaierSteinSolver.config import PROCESSED_DATA_DIR
+>>> from MaierSteinSolver.dataset import points_to_csv
+>>> num_pts = path_r.shape[0]
+>>> points_to_csv(path_r, PROCESSED_DATA_DIR/f"enhanced_sample_{num_pts}pts.csv")
+```
+
+
+
 ## Training
 
 Now we use the command line (bash) instead of the python
@@ -284,11 +308,6 @@ We get:
 
 ![Absolute error](reports/figures/absolute-error.png)
 
-
-
-## Project Documentation
-
-The documentation for this project can be found at the website: <https://williamclarktennis.github.io/MaierSteinSolverRepo/>.
 
 ## Project Organization
 
