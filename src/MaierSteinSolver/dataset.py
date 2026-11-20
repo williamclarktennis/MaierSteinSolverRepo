@@ -431,10 +431,12 @@ def main(
     output_path: Path = PROCESSED_DATA_DIR / "dataset.csv",
     # ----------------------------------------------
 ):
-    logger.info("METADYNAMICS")
-    M = Metadynamics()
-    G_L, full_path = M.get_guassian_locations()
-    logger.success("Processing dataset complete.")
+    # Stuff the Makefile will do: 
+    logger.info("Converting External Data to Desired Format")
+    make_finite_elements_prediction_csv()
+    make_ellipse_pts_csv()
+    make_bdy_csv()
+
     
 
 if __name__ == "__main__":
