@@ -21,7 +21,7 @@ The latter link has the question: how do I specify my
 credentials when pushing over https?
 
 
-### January 2, 2025
+### January 2, 2026
 
 I am checking if Github Actions actually publishes and deploys my
 website at the link: <https://williamclarktennis.github.io/MaierSteinSolverRepo/>.
@@ -84,3 +84,7 @@ Here is a tutorial for the pyproject.toml file: <https://packaging.python.org/en
 I refactored the directory structure to include a src directory, 
 which required changing the pyproject.toml. I still need to make corresponding
 changes to the Makefile. 
+
+
+## November 15, 2026
+
