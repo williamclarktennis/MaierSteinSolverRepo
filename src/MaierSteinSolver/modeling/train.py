@@ -20,13 +20,11 @@ app = typer.Typer()
 
 @app.command()
 def main(
-    # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----
     hidden_layers: str = "20,20",
     learning_rate: str = "1.0",
     transition_region_path: Path = PROCESSED_DATA_DIR / "CHECKERBOARD_ELLIPSE_2026-01-12T17:43.csv",
-    boundary_data_path: Path = PROCESSED_DATA_DIR / "BOUNDARY_DATA_2026-01-12T12:05.csv",
+    boundary_data_path: Path = PROCESSED_DATA_DIR / "BOUNDARY_DATA.csv",
     model_path: Path = MODELS_DIR / "model.pt",
-    # -----------------------------------------
 ):
     """
     Parameters: 

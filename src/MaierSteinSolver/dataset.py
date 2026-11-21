@@ -118,7 +118,7 @@ def make_ellipse_pts_csv():
     pts_df = pd.read_csv(EXTERNAL_DATA_DIR/"MaierStein_pts.csv", \
                          header = None)
     pts_df = pts_df.rename(columns = { 0 : X_COORD, 1 : Y_COORD })
-    pts_df.to_csv(RAW_DATA_DIR/"Ellipse_pts.csv", index = False)
+    pts_df.to_csv(PROCESSED_DATA_DIR/"Ellipse_pts.csv", index = False)
     logger.success("Processing dataset complete.")
     pass
 
@@ -190,8 +190,7 @@ def make_bdy_csv(num_pts_A: int = 500, num_pts_B: int = 500):
     frames = [pts_A_df,pts_B_df]
     pts_A_B_df = pd.concat(frames)
     
-    now = datetime.now().isoformat(timespec='minutes')
-    pts_A_B_df.to_csv(RAW_DATA_DIR / f"BOUNDARY_DATA_{now}.csv", index=False)
+    pts_A_B_df.to_csv(PROCESSED_DATA_DIR / f"BOUNDARY_DATA.csv", index=False)
     logger.success("Processing dataset complete.")
 
 

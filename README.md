@@ -28,12 +28,6 @@ if `make` is not installed:
 Available rules:
 
 requirements             Install Python dependencies
-clean                    Delete all compiled Python files
-lint                     Lint using ruff (use `make format` to do formatting)
-format                   Format source code with ruff
-sync_data_down           Download Data from storage system
-sync_data_up             Upload Data to storage system
-create_environment       Set up Python interpreter environment
 data                     Make dataset
 ```
 
