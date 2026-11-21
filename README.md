@@ -63,15 +63,19 @@ Then make the data repository...
 The Maier-Stein system is described by the SDE
 
 $$
-    d \begin{bmatrix}
-    x \\
-    y
-    \end{bmatrix} = 
-    \begin{bmatrix}
-        x - x^3 - \beta x y^2 \\
-        -(1 + x^2) y
-    \end{bmatrix} dt + 
-    \sqrt{\epsilon} \, dW,
+\begin{aligned}
+\mathrm{d}\begin{bmatrix}
+x\\
+y
+\end{bmatrix}
+=
+\begin{bmatrix}
+x-x^3-\beta xy^2\\
+-(1+x^2)y
+\end{bmatrix}\mathrm{d}t
++
+\sqrt{\epsilon}\,\mathrm{d}W,
+\end{aligned}
 $$
 
 where $W_t$ is Brownian motion.
@@ -106,12 +110,14 @@ $q|_{\partial B} = 1$.
  
 
 The committor function satisfies the Kolmogorov backward equation:
+
 $$
 \begin{cases}
-b \cdot \nabla q + \frac{\epsilon}{2} \Delta  q = 0 & (x,y) \in \Omega \\
-q|_{\partial A} = 0, \qquad q|_{\partial_B}  = 1
+b \cdot \nabla q + \dfrac{\epsilon}{2}\Delta q = 0 & (x,y) \in \Omega \\
+q|_{\partial A} = 0, \qquad q|_{\partial B} = 1
 \end{cases}
 $$
+
 where $\Delta = \partial_{xx} + \partial_{yy}$ is the Laplacian.
 We denote 
 $b \cdot \nabla + \frac{\epsilon}{2} \Delta = \mathcal{L}$.
@@ -128,7 +134,11 @@ hitting $B$ before $A$, given the starting point (the input nodes).
 So the neural network is just a function $NN: \mathbb R^2 \to \mathbb R$.
 (Of course it will have a bunch of hidden layers.)
 So we want to make sure that 
-$$NN(x,y) \approx q(x,y)$$
+
+$$
+NN(x,y) \approx q(x,y)
+$$
+
 for all $x,y \in \Omega$.
 
 How do we do this? The idea is again simple. 
@@ -143,8 +153,11 @@ This means that the loss function during neural network training
 will be of the form
 
 $$
-\sum_{\text{training pts}}\lVert \mathcal{L} NN \rVert^2 + \sum_{\partial A} (NN - 0)^2 +
-\sum_{\partial B} (1 - NN)^2. 
+\sum_{\text{training pts}}\left\lVert \mathcal{L} NN \right\rVert^2
++
+\sum_{\partial A}(NN-0)^2
++
+\sum_{\partial B}(1-NN)^2.
 $$
 
 This is called
