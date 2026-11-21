@@ -17,7 +17,7 @@ virtual environment, and activate it.
 ~$ source .venv/bin/activate
 ```
 
-Then test the Makefile, and here's how to deal 
+Test if you have `make`, and here's how to deal 
 if `make` is not installed:
 
 ```
@@ -37,7 +37,26 @@ Install the python dependencies by running
 ```
 
 
+Install the repository as a package from the project root:
+```
+(.venv) ~$ python -m pip install .
+```
 
+This makes imports such as `from MaierSteinSolver.dataset import EulerMaruyama`
+work from the Python interpreter (REPL). If you plan to edit code under `src/MaierSteinSolver/`,
+install in editable mode instead:
+```
+(.venv) ~$ python -m pip install -e .
+```
+For example, after changing `src/MaierSteinSolver/dataset.py`, start a new
+Python process and import the module again; it will use your edited source
+without another install. With the regular `python -m pip install .` install,
+you would reinstall after changing the package code.
+
+Then make the data repository...
+```
+(.venv) ~$ make data
+```
 
 ## Background and Physics-informed Neural Network Idea
 
@@ -145,6 +164,8 @@ this trajectory hits as training data.
 
 The Euler Maruyama discretization is used for this. 
 See Section 2.5 in `reports/REU-final-report-2022.pdf` for the details.
+Enter the python interpreter by typing `python3` into the command prompt. 
+Then enter the following code.
 
 ```
 >>> from MaierSteinSolver.dataset import EulerMaruyama
