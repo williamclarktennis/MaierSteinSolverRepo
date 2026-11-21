@@ -51,7 +51,8 @@ The Maier-Stein system is described by the SDE
 
 $$
     d \begin{bmatrix}
-    x \\ y
+    x \\
+    y
     \end{bmatrix} = 
     \begin{bmatrix}
         x - x^3 - \beta x y^2 \\
