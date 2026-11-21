@@ -101,7 +101,12 @@ at $(x,y)$ will hit $B$ before it hits $A$.
 This probability, denoted $q(x,y)$, 
 is known as the **committor function**.
 For example,
-$q|_{\partial A} = 0$ because, how could it hit $B$ before hitting
+
+$$
+q|_{\partial A} = 0
+$$
+
+because, how could it hit $B$ before hitting
 $A,$ since it is hitting $A$ already! Conversely, 
 $q|_{\partial B} = 1$.
  
