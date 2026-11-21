@@ -16,6 +16,9 @@ INTERIM_DATA_DIR = DATA_DIR / "interim"
 PROCESSED_DATA_DIR = DATA_DIR / "processed"
 EXTERNAL_DATA_DIR = DATA_DIR / "external"
 
+for directory in (RAW_DATA_DIR, INTERIM_DATA_DIR, PROCESSED_DATA_DIR):
+    directory.mkdir(parents=True, exist_ok=True)
+
 MODELS_DIR = PROJ_ROOT / "models"
 
 REPORTS_DIR = PROJ_ROOT / "reports"
