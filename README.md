@@ -66,8 +66,7 @@ $$
 \mathrm{d}\begin{bmatrix}
 x\\
 y
-\end{bmatrix}
-=
+\end{bmatrix} =
 \begin{bmatrix}
 x-x^3-\beta xy^2\\
 -(1+x^2)y
