@@ -6,6 +6,45 @@
 
 Solve for committor function using neural networks.
 
+## Installation (Linux)
+
+First clone the repo, set up a 
+virtual environment, and activate it.
+```
+~$ git clone https://github.com/williamclarktennis/MaierSteinSolverRepo.git
+~$ cd MaierSteinSolverRepo
+~$ python3 -m venv .venv
+~$ source .venv/bin/activate
+```
+
+Then test the Makefile, and here's how to deal 
+if `make` is not installed:
+
+```
+(.venv) ~$ make
+-bash: make: command not found
+(.venv) ~$ sudo apt install -y make
+(.venv) ~$ make
+Available rules:
+
+requirements             Install Python dependencies
+clean                    Delete all compiled Python files
+lint                     Lint using ruff (use `make format` to do formatting)
+format                   Format source code with ruff
+sync_data_down           Download Data from storage system
+sync_data_up             Upload Data to storage system
+create_environment       Set up Python interpreter environment
+data                     Make dataset
+```
+
+Install the python dependencies by running
+```
+(.venv) ~$ make requirements
+```
+
+
+
+
 ## Background and Physics-informed Neural Network Idea
 
 The Maier-Stein system is described by the SDE
