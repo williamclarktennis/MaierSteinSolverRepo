@@ -63,7 +63,6 @@ Then make the data repository...
 The Maier-Stein system is described by the SDE
 
 $$
-\begin{aligned}
 \mathrm{d}\begin{bmatrix}
 x\\
 y
@@ -75,7 +74,6 @@ x-x^3-\beta xy^2\\
 \end{bmatrix}\mathrm{d}t
 +
 \sqrt{\epsilon}\,\mathrm{d}W,
-\end{aligned}
 $$
 
 where $W_t$ is Brownian motion.
