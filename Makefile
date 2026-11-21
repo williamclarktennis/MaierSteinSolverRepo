@@ -2,9 +2,9 @@
 # GLOBALS                                                                       #
 #################################################################################
 
-PROJECT_NAME = Maier-Stein-Solver
+PROJECT_NAME = MaierSteinSolver
 PYTHON_VERSION = 3.9
-PYTHON_INTERPRETER = python
+PYTHON_INTERPRETER = python3
 
 #################################################################################
 # COMMANDS                                                                      #
@@ -74,7 +74,7 @@ create_environment:
 ## Make dataset
 .PHONY: data
 data: requirements
-	$(PYTHON_INTERPRETER) Maier-Stein-Solver/dataset.py
+	$(PYTHON_INTERPRETER) src/MaierSteinSolver/dataset.py
 
 
 #################################################################################
