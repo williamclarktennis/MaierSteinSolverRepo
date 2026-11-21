@@ -48,6 +48,7 @@ Install the python dependencies by running
 ## Background and Physics-informed Neural Network Idea
 
 The Maier-Stein system is described by the SDE
+
 $$
     d \begin{bmatrix}
     x \\ y
@@ -58,6 +59,7 @@ $$
     \end{bmatrix} dt + 
     \sqrt{\epsilon} \, dW,
 $$
+
 where $W_t$ is Brownian motion.
 
 Let the drift field be denoted by $b(x,y): \mathbb R^2 \to \mathbb R^2$.
