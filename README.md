@@ -309,7 +309,7 @@ delta-sized neighborhoods, etc.
 >>> points_to_csv(path_r, PROCESSED_DATA_DIR/f"enhanced_sample_{num_pts}pts.csv")
 ```
  
-
+![Finder](reports/figures/finder.png)
 
 
 ## Training
@@ -361,32 +361,19 @@ output when we type `typer train.py run --help`.
 
 Now let's train a model with 3 hidden layers, each having
 30 nodes. Let's train this model on the training data we produced
-from the previous metadynamics routine, namely, `enhanced_sample_21637pts.csv`.
+from the previous metadynamics routine, namely, `enhanced_sample_21750pts.csv`.
 We save the model to the file
-`model-30-30-30.pt`.
+`model-30-30-30.pt`. **Make sure to swap in your version of enhanced_sample_21750pts.csv
+as the number of points will be different each time.**
+Also, feel free to try out different NN archictectures, by replacing `30,30,30` by, e.g.,
+`20,25` or whatever. 
 
 ```
-(.venv) ➜  modeling git:(main) ✗ typer train.py run --hidden-layers 30,30,30 --transition-region-path "$PROJ_ROOT/data/processed/enhanced_sample_21637pts.csv" --model-path "$PROJ_ROOT/models/model-30-30-30.pt"
+(.venv) ➜  modeling git:(main) ✗ typer train.py run --hidden-layers 30,30,30 --transition-region-path "$PROJ_ROOT/data/processed/enhanced_sample_21750pts.csv" --model-path "$PROJ_ROOT/models/model-30-30-30.pt"
 ```
-The output at the command line is 
-```
-2026-11-19 11:43:48.418 | INFO     | MaierSteinSolver.config:<module>:11 - PROJ_ROOT path is: /Users/-
-MaierStein-Solver-CookieCutter-parent/MaierSteinSolverRepo
-2026-11-19 11:43:50.049 | INFO     | MaierSteinSolver.modeling.pinn:train:176 - Epoch 1
--------------------------------
-2026-11-19 11:43:50.108 | INFO     | MaierSteinSolver.modeling.pinn:single_training_loop:214 - loss: 0.255380  [    0/21637]
-2026-11-19 11:43:50.653 | INFO     | MaierSteinSolver.modeling.pinn:single_training_loop:214 - loss: 0.003998  [ 6400/21637]
-2026-11-19 11:43:51.148 | INFO     | MaierSteinSolver.modeling.pinn:single_training_loop:214 - loss: 0.003375  [12800/21637]
-2026-11-19 11:43:51.636 | INFO     | MaierSteinSolver.modeling.pinn:single_training_loop:214 - loss: 0.003668  [19200/21637]
-2026-11-19 11:43:51.822 | INFO     | MaierSteinSolver.modeling.pinn:train:176 - Epoch 2
--------------------------------
-2026-11-19 11:43:51.828 | INFO     | MaierSteinSolver.modeling.pinn:single_training_loop:214 - loss: 0.002423  [    0/21637]
-2026-11-19 11:43:52.324 | INFO     | MaierSteinSolver.modeling.pinn:single_training_loop:214 - loss: 0.002692  [ 6400/21637]
-2026-11-19 11:43:52.802 | INFO     | MaierSteinSolver.modeling.pinn:single_training_loop:214 - loss: 0.003557  [12800/21637]
-2026-11-19 11:43:53.284 | INFO     | MaierSteinSolver.modeling.pinn:single_training_loop:214 - loss: 0.003447  [19200/21637]
-2026-11-19 11:43:53.470 | INFO     | MaierSteinSolver.modeling.pinn:train:176 - Epoch 3
--------------------------------
-```
+
+![Training](reports/figures/train.png)
+
 
 ## Testing
 
@@ -440,6 +427,13 @@ We get:
 
 ## Project Organization
 
+Below is the initial project organization
+for a typical cookiecutter data science machine learning repo.
+I didn't end up posting much to the docs folder, 
+but I'm leaving it in case I need it later.
+Also, I didn't use the exact data folder structure, since this solver's
+data pipeline is not fit for the usual supervised learning data pipeline.
+
 ```
 ├── LICENSE            <- Open-source license if one is chosen
 ├── Makefile           <- Makefile with convenience commands like `make data` or `make train`
@@ -454,9 +448,7 @@ We get:
 │
 ├── models             <- Trained and serialized models, model predictions, or model summaries
 │
-├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
-│                         the creator's initials, and a short `-` delimited description, e.g.
-│                         `1.0-jqp-initial-data-exploration`.
+├── notebooks          <- Jupyter notebooks. 
 │
 ├── pyproject.toml     <- Project configuration file with package metadata for 
 │                         Maier-Stein-Solver and configuration for tools like black
