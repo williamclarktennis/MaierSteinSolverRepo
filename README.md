@@ -221,37 +221,94 @@ that the particle would have to work against to get closer
 to that point. In other words, the Gaussian deposit increases the
 potential energy at each dot.
 
-![Gaussian deposits](reports/figures/g-locations.png)
+![Gaussian deposits](reports/figures/g-locations1.png)
+
+It is satisfying to see that a sample path,
+sampled according to the metadynamics algo, despite
+having the same number of iterations as Euler-Maruyama, 
+managed to sample far more of the space:
 
 ```
 >>> plot_trajectory(sam_path)
 ```
-Plotting the sample path with the modified drift
-shows that it visits more area, than the Euler-Maruyama simulation.
 
-![Sample Path](reports/figures/metadynamics1.png)
+![Sample Path](reports/figures/metadynamics2.png)
 
-Here is a full routine
+Technically `sam_path` above is a sample
+that we collected when the Gaussian deposits
+were still being identified. For the enhanced sample 
+that we will eventually feed to the neural network, 
+we work directly with the fully modified drift 
+field (after all Gaussian deposits have been established).
+
+Continuing with the `G_L` array from above,
+we collect a sample of 500,000 points,
+which takes about 4 minutes to run. This is a high enough
+number of iterations to guarantee that the simulation
+visits enough of the sample space. Also, 
+the downside of the metadynamics algo is that
+the Gaussian deposits cause the algo to lag,
+which is why it takes 4 minutes. 
 
 ```
->>> from MaierSteinSolver.dataset import Metadynamics
->>> M = Metadynamics()
->>> G_L, path1 = M.get_guassian_locations()
->>> from MaierSteinSolver.plots import plot_trajectory
->>> plot_trajectory(G_L, delta_t = 1e-4, with_direction_field = False, with_comments = False)
 >>> path_biased = M.run_biased_sample_path(500000, G_L)
 >>> plot_trajectory(path_biased, dot_size = 0.001)
+```
+![Sample](reports/figures/metadynamics2-500000.png)
+
+Since the committor function 
+is undefined inside the equilibrium regions, we
+remove the points falling inside regions
+$A$ and $B$:
+
+```
 >>> from MaierSteinSolver.dataset import removeA_B
 >>> path_no_A_B = removeA_B(path_biased)
 >>> plot_trajectory(path_no_A_B, dot_size = 0.001)
+```
+![Sample](reports/figures/metadynamics2-nAB.png)
+
+(Side note: the time interval ([0,38]) is a bug that
+requires an easy future fix. T=38 is computed from 
+the length of the array `path_no_A_B`
+and the timestep length `delta_t = 1e-4`. The correct
+interval is ([0,50]).)
+
+Next, we delta-rarify, which means that
+we make sure each point in the sample
+has a $\delta$-neighborhood without any other
+points. The idea is that we bumped up 
+the number of points (500,000) to cover enough area,
+but now we thin that dataset out to make 
+neural network training much more efficient later on.
+
+```
 >>> from MaierSteinSolver.dataset import delta_rarify
 >>> path_r = delta_rarify(path_no_A_B)
 >>> plot_trajectory(path_r, dot_size = 0.001)
+```
+
+![Sample](reports/figures/metadynamics2-delta-rare.png)
+
+(Side note: see previous side note for the bug interval
+[0,2].)
+
+At this point `path_r` contains the points to 
+be used for neural network training (excluding
+the boundary points created when we ran `make data`).
+Now we just save as a .csv
+to the `PROCESSED_DATA_DIR`. In the future, we could use more 
+elaborate naming conventions for the file
+if we wanted to experiment with different timestep lengths, 
+delta-sized neighborhoods, etc.
+
+```
 >>> from MaierSteinSolver.config import PROCESSED_DATA_DIR
 >>> from MaierSteinSolver.dataset import points_to_csv
 >>> num_pts = path_r.shape[0]
 >>> points_to_csv(path_r, PROCESSED_DATA_DIR/f"enhanced_sample_{num_pts}pts.csv")
 ```
+ 
 
 
 
