@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -6,8 +7,27 @@ from loguru import logger
 # Load environment variables from .env file if it exists
 load_dotenv()
 
+
+def find_project_root() -> Path:
+    """Find the repository root from an environment override or pyproject.toml."""
+    override = os.getenv("PROJ_ROOT")
+    if override:
+        return Path(override).expanduser().resolve()
+
+    starts = (Path(__file__).resolve(), Path.cwd().resolve())
+    for start in starts:
+        current = start if start.is_dir() else start.parent
+        for candidate in (current, *current.parents):
+            if (candidate / "pyproject.toml").is_file():
+                return candidate
+
+    # Preserve a useful fallback for regular package installs, though project
+    # data should normally be discovered from the current project directory.
+    return Path(__file__).resolve().parents[2]
+
+
 # Paths
-PROJ_ROOT = Path(__file__).resolve().parents[2]
+PROJ_ROOT = find_project_root()
 logger.info(f"PROJ_ROOT path is: {PROJ_ROOT}")
 
 DATA_DIR = PROJ_ROOT / "data"
