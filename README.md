@@ -6,6 +6,10 @@
 
 Solve for committor function using neural networks.
 
+## Video explanation:
+
+[Watch the video explanation on YouTube](https://www.youtube.com/watch?v=oNukv2Up6oA)
+
 ## Installation (Linux)
 
 First clone the repo, set up a 
